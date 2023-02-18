@@ -6,33 +6,30 @@ using UnityEngine.Rendering.Universal;
 public class depthShadowRendererFeature : ScriptableRendererFeature
 {
     [Serializable]
-    public class Setting
+    public class DepthSetting
     {
-        public LayerMask hairLayer;
-        public LayerMask faceLayer;
-
-        [Range(1000, 5000)]
-        public int queueMin = 2000;
-        [Range(1000, 5000)]
-        public int queueMax = 2000;
-
-        public Material materia;
+        public LayerMask m_ShadowLayer;
+        //now layer is enough
     }
-
-    public Setting m_settings = new Setting();
+    [SerializeField]
+    private DepthSetting m_settings = new DepthSetting();
 
     DepthShadowRenderPass m_ScriptablePass;
+    private int m_ShadowTexID;
 
     /// <inheritdoc/>
     public override void Create()
     {
         m_ScriptablePass = new DepthShadowRenderPass(m_settings, RenderPassEvent.BeforeRenderingOpaques);
+        m_ShadowTexID = Shader.PropertyToID("_CameraDepthShadowTexture");
+        //m_depthShadowRT = RTHandles.Alloc(new RenderTargetIdentifier(id));
     }
 
     // Here you can inject one or multiple render passes in the renderer.
     // This method is called when setting up the renderer once per-camera.
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
+        m_ScriptablePass.Setup(renderingData.cameraData.cameraTargetDescriptor, m_ShadowTexID);
         renderer.EnqueuePass(m_ScriptablePass);
     }
 }

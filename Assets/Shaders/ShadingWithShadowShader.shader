@@ -4,19 +4,21 @@ Shader "Custom/ShadingWithShadowShader"
     {   
         [MainTexture]_BaseMap ("Base Map", 2D) = "White" { }
 
-        _HairShadowDistance("Hair Shadow Distance", Float) = 1
+        _HairShadowDistance("Hair Shadow Distance", Range(0, 1)) = 0.01
 
         [Toggle(_IsFace)] _IsFace ("IsFace", Float) = 0.0
 
         _DarkColor ("DarkColor", Color) = (0.5, 0.5, 0.5, 1)
         _BrightColor ("BrightColor", Color) = (1, 1, 1, 1)
 
-        _CelShadowPoint("shade mid point", Range(0, 1)) = 0.5
+        _CelShadingPoint("shade mid point", Range(0, 1)) = 0.5
         _CelShadowSmoothness("shadow smooth", Range(0, 1)) = 0.2
 
         _RimColor ("RimColor", Color) = (1, 1, 1, 1)
         _RimSmoothness ("RimSmoothness", Range(0, 10)) = 10
         _RimStrength ("RimStrength", Range(0, 1)) = 0.1
+
+        _DepthBias("depth bias", Range(0, 1)) = 0.15
     }
     SubShader
     {
@@ -25,6 +27,8 @@ Shader "Custom/ShadingWithShadowShader"
         
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
+        #include "ShaderInclude/DepthShadowMethod.hlsl"
 
         #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
         #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
@@ -65,6 +69,8 @@ Shader "Custom/ShadingWithShadowShader"
                  float3 color: TEXCOORD5;
             };
 
+            TEXTURE2D(_BaseMap);            SAMPLER(sampler_BaseMap);
+
             v2f vert(a2v v)
             {
                 v2f o;
@@ -95,23 +101,29 @@ Shader "Custom/ShadingWithShadowShader"
                 #if _IsFace
                     float2 screenPos = i.positionSS.xy / i.positionSS.w;
                     float4 scaledScreenParams = GetScaledScreenParams();
-                    float3 viewLightDir = normalize(TransformWorldToViewDir(light.direction)) * (1 / i.posNDCw);
+                    float depth = i.positionCS.z / i.positionCS.w;
+                    float linearEyeDepth = LinearEyeDepth(depth, _ZBufferParams);
 
-                    float2 samplePoint = screenPos +_HairShadowDistance * viewLightDir.xy * 
-                        float2(1.0 / scaledScreenParams.x, 1.0 / scaledScreenParams.y);
+                    //Unity View Space ,Camera forward is the negative Z axis, So Add light view dir means substract
+                    float3 viewLightDir = normalize(TransformWorldToViewDir(light.direction)) * (1 / min(i.posNDCw, 1)) * min(1, 5 / linearEyeDepth);
 
-                    float hairShadow = 1 - SAMPLE_TEXTURE2D(_HairSolidColor, sampler_HairSolidColor, samplePoint);
+                    float2 samplePoint = screenPos + _HairShadowDistance * viewLightDir.xy;
+
+                    float hairDepth = LoadSceneDepthShadow(samplePoint);
+                    hairDepth = LinearEyeDepth(hairDepth, _ZBufferParams);
+                    
+                    float hairShadow = linearEyeDepth > (hairDepth - _DepthBias) ? 0 : 1;
                     ramp *= hairShadow;
                 #else
                     ramp *= shadow;
                 #endif
-
+                
                 float3 diffuse = lerp(_DarkColor.rgb, _BrightColor.rgb, ramp);
-                diffuse *= baseColor;
+                diffuse *= baseColor.rgb;
                 float3 viewDirectionWS = SafeNormalize(GetCameraPositionWS() - i.positionWS);
-                float rimStrength = pow(1 - dot(normal, viewDirectionWS), _RimSmoothness);
+                float rimStrength = pow(saturate(1 - dot(normal, viewDirectionWS)), _RimSmoothness);
                 float3 rimColor = _RimColor.rgb * rimStrength * _RimStrength;
-                return float4(diffuse + rimColor, 1.0);
+                return half4(diffuse + rimColor, 1.0);
             }
 
 

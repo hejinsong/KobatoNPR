@@ -5,6 +5,9 @@
 
 CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_ST;
+    half4 _BaseColor;
+    half _Cutoff;
+
     float _HairShadowDistance;
     float _CelShadingPoint;
     float _CelShadowSmoothness;
@@ -13,8 +16,7 @@ CBUFFER_START(UnityPerMaterial)
     float4 _RimColor;
     float _RimStrength;
     float _RimSmoothness;
+    float _DepthBias;
 CBUFFER_END
 
-TEXTURE2D(_BaseMap);            SAMPLER(sampler_BaseMap);
-TEXTURE2D(_HairSolidColor);     SAMPLER(sampler_HairSolidColor);
 #endif

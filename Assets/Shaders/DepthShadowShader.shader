@@ -1,6 +1,6 @@
 Shader "Custom/DepthShadowShader"
 {
-
+    //Just Implement ,but not used, use urp lit Generate depth
     SubShader
     {
         Tags { "RenderType"="Opaque"  "RenderPipeline"="UniversalRenderPipeline"}
@@ -10,75 +10,30 @@ Shader "Custom/DepthShadowShader"
 
         Pass
         {
-            Name "FaceDepthOnly"
-            Tags { "LightMode"="UniversalForward"}
-
+            Name "DepthOnly"
+            Tags{ "LightMode"="DepthOnly"}
+            Cull Off
             ColorMask 0
-            ZTest LEqual
             ZWrite On
 
             HLSLPROGRAM
+            #pragma only_renderers gles gles3 glcore d3d11
+            #pragma target 3.0
 
-            #pragma vertex vert
-            #pragma fragment frag
+            //--------------------------------------
+            // GPU Instancing
+            #pragma multi_compile_instancing
 
-            struct a2v
-            {
-                float4 positionOS: POSITION;
-            };
+            #pragma vertex DepthOnlyVertex
+            #pragma fragment DepthOnlyFragment
 
-            struct v2f
-            {
-                float4 positionCS: SV_POSITION;
-            };
+            // -------------------------------------
+            // Material Keywords
+            #pragma shader_feature_local_fragment _ALPHATEST_ON
+            #pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+            #include "NPRParameters.hlsl"
+            #include "ShaderInclude/NPRDepthShadowPass.hlsl"
 
-            v2f vert(a2v v)
-            {
-                v2f o;
-                o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
-                return o;
-            }
-
-            half4 frag(v2f i): SV_Target
-            {
-                return(0,0,0,1);
-            }
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Name "HairColorBuffer"
-            Tags{ "LightMode"="UniversalForward"}
-            Cull Off
-            ZTest LEqual
-            ZWrite Off
-
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            struct a2v
-            {
-                float4 positionOS: POSITION;
-            };
-
-            struct v2f
-            {
-                float4 positionCS: SV_POSITION;
-            };
-
-            v2f vert(a2v v)
-            {
-                v2f o;
-                VertexPositionInputs positionInputs = GetVertexPositionInputs(v.positionOS.xyz);
-                o.positionCS = positionInputs.positionCS;
-                return o;
-            }
-
-            half4 frag(v2f i): SV_Target
-            {
-                return half4(1,1,1,1);
-            }
             ENDHLSL
         }
     }

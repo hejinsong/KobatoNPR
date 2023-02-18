@@ -7,23 +7,13 @@ using static Unity.Burst.Intrinsics.X86.Avx;
 
 class DepthShadowRenderPass : ScriptableRenderPass
 {
+    private static readonly ShaderTagId shaderTag = new ShaderTagId("DepthOnly");
 
-    private FilteringSettings m_faceFilter;
-    private FilteringSettings m_hairFilter;
-
-    internal int hairColorBufferID = 0;
-    internal Material m_material;
-    private static readonly ShaderTagId shaderTag = new ShaderTagId("UniversalForward");
-    public DepthShadowRenderPass(Setting setting, RenderPassEvent evt)
+    FilteringSettings m_FilteringSettings;
+    public DepthShadowRenderPass(DepthSetting setting, RenderPassEvent evt)
     {
         RenderQueueRange queue = new RenderQueueRange();
-        queue.lowerBound = Mathf.Min(setting.queueMax, setting.queueMin);
-        queue.upperBound = Mathf.Max(setting.queueMax, setting.queueMin);
-
-        m_faceFilter = new FilteringSettings(queue, setting.faceLayer);
-        m_hairFilter = new FilteringSettings(queue, setting.hairLayer);
-
-        m_material = setting.materia;
+        m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, setting.m_ShadowLayer);
         this.renderPassEvent = evt;
         base.profilingSampler = new ProfilingSampler("RenderFeatureShadow");
     }
@@ -34,12 +24,11 @@ class DepthShadowRenderPass : ScriptableRenderPass
     // The render pipeline will ensure target setup and clearing happens in a performant manner.
     public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
-        int temp = Shader.PropertyToID("_HairSolidColor");
-        RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
-        cmd.GetTemporaryRT(temp, desc);
-        hairColorBufferID = temp;
+        //Need Dirty flag
+        cmd.GetTemporaryRT(m_nameID, m_Descriptor, FilterMode.Point);
+
         RenderTargetIdentifier targetIdentifier =
-            new RenderTargetIdentifier(temp, 0, CubemapFace.Unknown, -1);
+            new RenderTargetIdentifier(m_nameID, 0, CubemapFace.Unknown, -1);
         RTHandle renderTarget = RTHandles.Alloc(targetIdentifier);
         ConfigureTarget(renderTarget);
         ConfigureClear(ClearFlag.All, Color.black);
@@ -57,27 +46,33 @@ class DepthShadowRenderPass : ScriptableRenderPass
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
 
-            var draw1 = CreateDrawingSettings(shaderTag, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
-            draw1.overrideMaterial = m_material;
-            draw1.overrideMaterialPassIndex = 0;
-            context.DrawRenderers(renderingData.cullResults, ref draw1, ref m_faceFilter);
-
-            var draw2 = CreateDrawingSettings(shaderTag, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
-            draw2.overrideMaterial = m_material;
-            draw2.overrideMaterialPassIndex = 1;
-            context.DrawRenderers(renderingData.cullResults, ref draw2, ref m_hairFilter);
+            var drawSetting = CreateDrawingSettings(shaderTag, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
+            drawSetting.perObjectData = PerObjectData.None;
+            context.DrawRenderers(renderingData.cullResults, ref drawSetting, ref m_FilteringSettings);
         }
         context.ExecuteCommandBuffer(cmd);
         CommandBufferPool.Release(cmd);
     }
 
+    public void Setup(RenderTextureDescriptor cameraRTDesc,int nameID)
+    {
+        m_nameID = nameID;
+        cameraRTDesc.colorFormat = RenderTextureFormat.Depth;
+        cameraRTDesc.depthBufferBits = 16;
+        cameraRTDesc.msaaSamples = 1;
+
+        m_Descriptor = cameraRTDesc;
+    }
+
     // Cleanup any allocated resources that were created during the execution of this render pass.
     public override void OnCameraCleanup(CommandBuffer cmd)
     {
-        cmd.ReleaseTemporaryRT(hairColorBufferID);
+        cmd.ReleaseTemporaryRT(m_nameID);
     }
 
     private ProfilingSampler m_profilingSampler = new ProfilingSampler("DepthShadowRenderPass");
+    private int  m_nameID { get; set; }
+    internal RenderTextureDescriptor m_Descriptor;
 }
 
 
