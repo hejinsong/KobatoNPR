@@ -28,7 +28,6 @@ Shader "Custom/ShadingWithShadowShader"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareNormalsTexture.hlsl"
-        #include "ShaderInclude/DepthShadowMethod.hlsl"
 
         #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
         #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
@@ -70,6 +69,7 @@ Shader "Custom/ShadingWithShadowShader"
             };
 
             TEXTURE2D(_BaseMap);            SAMPLER(sampler_BaseMap);
+            TEXTURE2D(_HairDepthTexture);   SAMPLER(sampler_HairDepthTexture);
 
             v2f vert(a2v v)
             {
@@ -109,7 +109,7 @@ Shader "Custom/ShadingWithShadowShader"
 
                     float2 samplePoint = screenPos + _HairShadowDistance * viewLightDir.xy;
 
-                    float hairDepth = LoadSceneDepthShadow(samplePoint);
+                    float hairDepth = SAMPLE_TEXTURE2D(_HairDepthTexture, sampler_HairDepthTexture, samplePoint).g;
                     hairDepth = LinearEyeDepth(hairDepth, _ZBufferParams);
                     
                     float hairShadow = linearEyeDepth > (hairDepth - _DepthBias) ? 0 : 1;

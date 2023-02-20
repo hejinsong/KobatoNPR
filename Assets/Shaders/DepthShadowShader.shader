@@ -6,6 +6,7 @@ Shader "Custom/DepthShadowShader"
         Tags { "RenderType"="Opaque"  "RenderPipeline"="UniversalRenderPipeline"}
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
         ENDHLSL
 
         Pass

@@ -7,15 +7,15 @@ using static Unity.Burst.Intrinsics.X86.Avx;
 
 class DepthShadowRenderPass : ScriptableRenderPass
 {
-    private static readonly ShaderTagId shaderTag = new ShaderTagId("DepthOnly");
+    private static readonly ShaderTagId shaderTag = new ShaderTagId("UniversalForward");//haid use universal lit
 
     FilteringSettings m_FilteringSettings;
     public DepthShadowRenderPass(DepthSetting setting, RenderPassEvent evt)
     {
-        RenderQueueRange queue = new RenderQueueRange();
         m_FilteringSettings = new FilteringSettings(RenderQueueRange.opaque, setting.m_ShadowLayer);
         this.renderPassEvent = evt;
         base.profilingSampler = new ProfilingSampler("RenderFeatureShadow");
+        m_Mat = setting.m_material;
     }
     // This method is called before executing the render pass.
     // It can be used to configure render targets and their clear state. Also to create temporary render target textures.
@@ -25,7 +25,7 @@ class DepthShadowRenderPass : ScriptableRenderPass
     public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
     {
         //Need Dirty flag
-        cmd.GetTemporaryRT(m_nameID, m_Descriptor, FilterMode.Point);
+        cmd.GetTemporaryRT(m_nameID, m_Descriptor);
 
         RenderTargetIdentifier targetIdentifier =
             new RenderTargetIdentifier(m_nameID, 0, CubemapFace.Unknown, -1);
@@ -47,7 +47,8 @@ class DepthShadowRenderPass : ScriptableRenderPass
             cmd.Clear();
 
             var drawSetting = CreateDrawingSettings(shaderTag, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
-            drawSetting.perObjectData = PerObjectData.None;
+            drawSetting.overrideMaterial = m_Mat;
+            drawSetting.overrideMaterialPassIndex = 0;
             context.DrawRenderers(renderingData.cullResults, ref drawSetting, ref m_FilteringSettings);
         }
         context.ExecuteCommandBuffer(cmd);
@@ -57,9 +58,9 @@ class DepthShadowRenderPass : ScriptableRenderPass
     public void Setup(RenderTextureDescriptor cameraRTDesc,int nameID)
     {
         m_nameID = nameID;
-        cameraRTDesc.colorFormat = RenderTextureFormat.Depth;
-        cameraRTDesc.depthBufferBits = 16;
-        cameraRTDesc.msaaSamples = 1;
+        //cameraRTDesc.colorFormat = RenderTextureFormat.Depth;
+        //cameraRTDesc.depthBufferBits = 16;
+        //cameraRTDesc.msaaSamples = 1;
 
         m_Descriptor = cameraRTDesc;
     }
@@ -73,6 +74,7 @@ class DepthShadowRenderPass : ScriptableRenderPass
     private ProfilingSampler m_profilingSampler = new ProfilingSampler("DepthShadowRenderPass");
     private int  m_nameID { get; set; }
     internal RenderTextureDescriptor m_Descriptor;
+    private Material m_Mat;
 }
 
 

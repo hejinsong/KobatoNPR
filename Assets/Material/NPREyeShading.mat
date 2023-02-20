@@ -87,12 +87,14 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
+    - _CelShadingPoint: 0.239
     - _CelShadowPoint: 0.458
-    - _CelShadowSmoothness: 0.346
+    - _CelShadowSmoothness: 0.292
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DepthBias: 0.164
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0

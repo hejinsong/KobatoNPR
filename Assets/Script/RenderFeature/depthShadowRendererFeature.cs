@@ -9,6 +9,7 @@ public class depthShadowRendererFeature : ScriptableRendererFeature
     public class DepthSetting
     {
         public LayerMask m_ShadowLayer;
+        public Material m_material;
         //now layer is enough
     }
     [SerializeField]
@@ -21,7 +22,7 @@ public class depthShadowRendererFeature : ScriptableRendererFeature
     public override void Create()
     {
         m_ScriptablePass = new DepthShadowRenderPass(m_settings, RenderPassEvent.BeforeRenderingOpaques);
-        m_ShadowTexID = Shader.PropertyToID("_CameraDepthShadowTexture");
+        m_ShadowTexID = Shader.PropertyToID("_HairDepthTexture");
         //m_depthShadowRT = RTHandles.Alloc(new RenderTargetIdentifier(id));
     }
 
