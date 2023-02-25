@@ -7,7 +7,7 @@ using static Unity.Burst.Intrinsics.X86.Avx;
 
 class DepthShadowRenderPass : ScriptableRenderPass
 {
-    private static readonly ShaderTagId shaderTag = new ShaderTagId("UniversalForward");//haid use universal lit
+    private static readonly ShaderTagId shaderTag = new ShaderTagId("UniversalForward");//hair use universal lit
 
     FilteringSettings m_FilteringSettings;
     public DepthShadowRenderPass(DepthSetting setting, RenderPassEvent evt)
@@ -58,9 +58,6 @@ class DepthShadowRenderPass : ScriptableRenderPass
     public void Setup(RenderTextureDescriptor cameraRTDesc,int nameID)
     {
         m_nameID = nameID;
-        //cameraRTDesc.colorFormat = RenderTextureFormat.Depth;
-        //cameraRTDesc.depthBufferBits = 16;
-        //cameraRTDesc.msaaSamples = 1;
 
         m_Descriptor = cameraRTDesc;
     }

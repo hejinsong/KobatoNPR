@@ -125,9 +125,6 @@ Shader "Custom/ShadingWithShadowShader"
                 float3 rimColor = _RimColor.rgb * rimStrength * _RimStrength;
                 return half4(diffuse + rimColor, 1.0);
             }
-
-
-
             ENDHLSL
         }
     }

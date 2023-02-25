@@ -87,9 +87,9 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
-    - _CelShadingPoint: 0.172
+    - _CelShadingPoint: 0.164
     - _CelShadowPoint: 0.486
-    - _CelShadowSmoothness: 1
+    - _CelShadowSmoothness: 0.714
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
@@ -103,7 +103,7 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _HairShadowDistance: 0.005
+    - _HairShadowDistance: 0.004
     - _IsFace: 1
     - _Metallic: 0
     - _OcclusionStrength: 1
