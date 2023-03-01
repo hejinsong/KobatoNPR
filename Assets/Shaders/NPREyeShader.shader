@@ -1,6 +1,6 @@
-Shader "Custom/NPRHairShader"
+Shader "Custom/NPREyeShader"
 {
-Properties
+    Properties
     {
         _BaseMap ("Albedo (RGB)", 2D) = "white" {}
         _ShadowSmooth ("ShadowSmoothness", Range(0,1)) = 0.5
@@ -9,10 +9,6 @@ Properties
         _HighColor ("High Color", Color) = (1,1,1,1)
         _OutLineColor("OutLine Color", Color) = (0.5, 0.5, 0.5, 0)
         _OutLineWidth("OutLine Width", Range(0,10)) = 0.5
-
-        //Settings
-        [Header(RenderMode)]
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull Mode", Float) = 2.0
     }
     SubShader
     {
@@ -25,7 +21,6 @@ Properties
             Name "ForwardLit"
             Tags{"LightMode" = "UniversalForward"}
 
-            Cull[_Cull]
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore
             #pragma target 4.5
@@ -86,48 +81,6 @@ Properties
             #include "NPRForwardLitPass.hlsl"
             ENDHLSL
         }
-        //Add From Universal Lit
-        Pass
-        {
-            Name "ShadowCaster"
-            Tags{"LightMode" = "ShadowCaster"}
-
-            ZWrite On
-            ZTest LEqual
-            ColorMask 0
-            Cull[_Cull]
-
-            HLSLPROGRAM
-            #pragma exclude_renderers gles gles3 glcore
-            #pragma target 4.5
-
-            // -------------------------------------
-            // Material Keywords
-            #pragma shader_feature_local_fragment _ALPHATEST_ON
-            #pragma shader_feature_local_fragment _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-
-            //--------------------------------------
-            // GPU Instancing
-            #pragma multi_compile_instancing
-            #pragma multi_compile _ DOTS_INSTANCING_ON
-
-            // -------------------------------------
-            // Universal Pipeline keywords
-
-            // -------------------------------------
-            // Unity defined keywords
-            #pragma multi_compile_fragment _ LOD_FADE_CROSSFADE
-
-            // This is used during shadow map generation to differentiate between directional and punctual light shadows, as they use different formulas to apply Normal Bias
-            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
-
-            #pragma vertex ShadowPassVertex
-            #pragma fragment ShadowPassFragment
-
-            #include "NPRShadingInput.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
-            ENDHLSL
-        }
         Pass
         {
             //Trigger by Render Objects
@@ -141,8 +94,7 @@ Properties
             #pragma vertex NormalOutLineVertex
             #pragma fragment NormalOutLineFragment
 
-            //TODO : Add Outline Pass and Cbuffer File
-            #include "NPRShadingInput.hlsl"
+            #include "NPRShadingInput.hlsl" 
             #include "OutLinePass.hlsl"
 
             ENDHLSL

@@ -3,9 +3,6 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
-//TODO: Add Property into Cbuffer...
-float4 _OutLineColor;
-float _OutLineWidth;
 struct Attributes
 {
     float4 positionOS : POSITION;
