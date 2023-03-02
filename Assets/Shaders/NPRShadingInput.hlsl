@@ -12,10 +12,15 @@ float _ShadowSmooth;
 float _ShadowRange;
 float4 _DarkColor;
 float4 _HighColor;
+float4 _RimColor;
+float _RimStrength;
+float _RimSmoothness;
 
 float4 _OutLineColor;
 float _OutLineWidth;
-
+#if _FaceShading
+    float _HairShadowDistance;
+#endif
 float4 _DetailAlbedoMap_ST;
 half4 _BaseColor;
 half4 _SpecColor;
@@ -34,5 +39,8 @@ half _Surface;
 
 CBUFFER_END
 
+#if _FaceShading
+    TEXTURE2D(_HairDepthTexture);   SAMPLER(sampler_HairDepthTexture);
+#endif
 
 #endif

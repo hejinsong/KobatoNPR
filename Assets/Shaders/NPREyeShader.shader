@@ -7,8 +7,14 @@ Shader "Custom/NPREyeShader"
         _ShadowRange ("ShadowRange", Range(0,1)) = 0.5
         _DarkColor ("Drak Color", Color) = (0.3,0.3,0.3,1)
         _HighColor ("High Color", Color) = (1,1,1,1)
+        _RimColor ("RimColor", Color) = (1, 1, 1, 1)
+        _RimSmoothness ("RimSmoothness", Range(0, 10)) = 10
+        _RimStrength ("RimStrength", Range(0, 1)) = 0.1
         _OutLineColor("OutLine Color", Color) = (0.5, 0.5, 0.5, 0)
         _OutLineWidth("OutLine Width", Range(0,10)) = 0.5
+        //Settings
+        [Header(RenderMode)]
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull Mode", Float) = 2.0
     }
     SubShader
     {
@@ -21,6 +27,7 @@ Shader "Custom/NPREyeShader"
             Name "ForwardLit"
             Tags{"LightMode" = "UniversalForward"}
 
+            Cull[_Cull]
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore
             #pragma target 4.5
