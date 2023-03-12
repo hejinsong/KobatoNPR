@@ -1,25 +1,21 @@
-Shader "Custom/NPRHairShader"
+Shader "Custom/NPRFaceShader"
 {
 Properties
     {
         _BaseMap ("Albedo (RGB)", 2D) = "white" {}
-        _RampMap("Ramp Texture", 2D) = "white" {}
         _BaseColor("Base Color", Color) = (1,1,1,1)
         _ShadowSmooth ("ShadowSmoothness", Range(0,1)) = 0.5
         _ShadowRange ("ShadowRange", Range(0,1)) = 0.5
+        _HairShadowStrength ("HShadowStrength", Range(0,1)) = 0.5
         _DarkColor ("Drak Color", Color) = (0.3,0.3,0.3,1)
         _HighColor ("High Color", Color) = (1,1,1,1)
         _RimColor ("RimColor", Color) = (1, 1, 1, 1)
         _RimSmoothness ("RimSmoothness", Range(0, 10)) = 10
         _RimStrength ("RimStrength", Range(0, 1)) = 0.1
+        _HairShadowDistance("Hair Shadow Distance", Range(0, 1)) = 0.01
         _OutLineColor("OutLine Color", Color) = (0.5, 0.5, 0.5, 0)
         _OutLineWidth("OutLine Width", Range(0,10)) = 0.5
         
-        _Smoothness("Smoothness", Range(0, 1)) = 0.5
-        //BlinnPhong
-        _Glossiness("Blinn Phong glossiness", Range(0.1,1)) = 0.5
-         _SpecularColor("Specular Color", Color) = (1,1,1,1)
-        //Shader Feature : "_SHADEMODE" + "_" + "NONE/BLINNPHONG/GGX"
         [KeywordEnum(None,BlinnPhong, GGX)] _SpecularMode ("Specular Mode", Float) = 0
         [KeywordEnum(None, Lambert, Ramp)] _DiffuseMode("Diffuse Mode", Float) = 1
         //Settings
@@ -39,6 +35,7 @@ Properties
 
             Cull[_Cull]
             HLSLPROGRAM
+            #define _FaceShading 1
             #pragma exclude_renderers gles gles3 glcore
             #pragma target 4.5
 
@@ -149,7 +146,7 @@ Properties
             Tags { "LightMode" = "OutLine"}
             Cull Front
             ZTest LEqual
-            Offset 0,0
+            Offset 1,1
             HLSLPROGRAM
             #pragma multi_compile _ _OUTLINE
             #pragma vertex NormalOutLineVertex

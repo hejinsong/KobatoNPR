@@ -3,6 +3,7 @@ Shader "Custom/NPREyeShader"
     Properties
     {
         _BaseMap ("Albedo (RGB)", 2D) = "white" {}
+        _BaseColor("Base Color", Color) = (1,1,1,1)
         _ShadowSmooth ("ShadowSmoothness", Range(0,1)) = 0.5
         _ShadowRange ("ShadowRange", Range(0,1)) = 0.5
         _DarkColor ("Drak Color", Color) = (0.3,0.3,0.3,1)
@@ -12,6 +13,9 @@ Shader "Custom/NPREyeShader"
         _RimStrength ("RimStrength", Range(0, 1)) = 0.1
         _OutLineColor("OutLine Color", Color) = (0.5, 0.5, 0.5, 0)
         _OutLineWidth("OutLine Width", Range(0,10)) = 0.5
+        
+        [KeywordEnum(None,BlinnPhong, GGX)] _SpecularMode ("Specular Mode", Float) = 0
+        [KeywordEnum(None, Lambert, Ramp)] _DiffuseMode("Diffuse Mode", Float) = 1
         //Settings
         [Header(RenderMode)]
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull Mode", Float) = 2.0
@@ -34,6 +38,8 @@ Shader "Custom/NPREyeShader"
 
             // -------------------------------------
             // Material Keywords
+            #pragma shader_feature_local _SPECULARMODE_NONE _SPECULARMODE_BLINNPHONG _SPECULARMODE_GGX
+            #pragma shader_feature_local _DIFFUSEMODE_NONE _DIFFUSEMODE_LAMBERT _DIFFUSEMODE_RAMP
             #pragma shader_feature_local _NORMALMAP
             #pragma shader_feature_local _PARALLAXMAP
             #pragma shader_feature_local _RECEIVE_SHADOWS_OFF
